@@ -74,6 +74,7 @@ uint16_t COMBO_LEN = sizeof(key_combos)/sizeof(key_combos[0]);
 
 #ifdef OLED_ENABLE
 
+#if 0
 static void render_logo(void) {
     static uint32_t counter = 0;
 
@@ -110,6 +111,7 @@ static void render_logo(void) {
     ++counter;
     return;
 }
+#endif
 
 static void print_status_narrow(void) {
     // Print current mode
@@ -128,10 +130,38 @@ static void print_status_narrow(void) {
     oled_write_P(PSTR("\n\n"), false);
     led_t led_usb_state = host_keyboard_led_state();
     oled_write_ln_P(PSTR("CAPS"), led_usb_state.caps_lock);
+
+    oled_write_P(PSTR("\n\n"), false);
+
+    if (is_keyboard_left()) {
+        oled_write_ln_P(!IS_LAYER_ON(_RTRIGGER)
+                        ? PSTR("= +")
+                        : PSTR("= +"),
+                        false);
+        oled_write_ln_P(!IS_LAYER_ON(_LTRIGGER)
+                        ? (!IS_LAYER_ON(_RTRIGGER)
+                           ? PSTR("- _")
+                           : PSTR("` ~"))
+                        : PSTR("TAB"),
+                        false);
+    }
+    else {
+        oled_write_ln_P(!IS_LAYER_ON(_LTRIGGER)
+                        ? PSTR("[ {")
+                        : PSTR("\\ |"),
+                        false);
+        oled_write_ln_P(!IS_LAYER_ON(_LTRIGGER)
+                        ? PSTR("] }")
+                        : PSTR("' \""),
+                        false);
+    }
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     if (is_keyboard_left()) {
+        return OLED_ROTATION_270;
+    }
+    else {
         return OLED_ROTATION_270;
     }
     return rotation;
@@ -142,7 +172,8 @@ bool oled_task_user(void) {
         oled_clear();
         print_status_narrow();
     } else {
-        render_logo();
+        oled_clear();
+        print_status_narrow();
     }
 
     return false;
